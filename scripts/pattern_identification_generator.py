@@ -13,7 +13,7 @@ TASK_NAME = "pattern_identification"
 
 
 def generate_example():
-    num_symbols = int(len(SYMBOLS) / 2)
+    num_symbols = len(SYMBOLS) // 2
     target_symbol = random.choice(SYMBOLS)
     symbol_list = random.sample(SYMBOLS, num_symbols)
     target = "foo" if target_symbol in symbol_list else "bar"

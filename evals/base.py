@@ -42,7 +42,7 @@ class ModelSpec:
             self.headers = {}
 
         if self.model is None:
-            raise ValueError(f"Must specify a model")
+            raise ValueError("Must specify a model")
 
 
 @dataclass

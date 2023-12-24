@@ -12,10 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def _first_not_none(*args):
-    for arg in args:
-        if arg is not None:
-            return arg
-    return None
+    return next((arg for arg in args if arg is not None), None)
 
 
 class SnowflakeError(Exception):
@@ -90,8 +87,7 @@ class SnowflakeConnection:
 
     def cursor(self, *args, **kwargs):
         self._ensure_connected()
-        cs = self.ctx.cursor(*args, **kwargs)
-        return cs
+        return self.ctx.cursor(*args, **kwargs)
 
     @contextmanager
     def __call__(self, *args, **kwargs):

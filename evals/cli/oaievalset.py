@@ -80,7 +80,7 @@ def main() -> None:
     command_strs = [" ".join(cmd) for cmd in commands]
     print("Going to run the following commands:")
     for command_str in command_strs:
-        print("  " + command_str)
+        print(f"  {command_str}")
 
     num_already_completed = num_evals - len(commands)
     for idx, command in enumerate(commands):
