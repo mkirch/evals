@@ -15,10 +15,7 @@ def get_accuracy(events: Sequence[Event]) -> float:
     for event in events:
         num_total += 1
         num_correct += int(event.data["correct"])
-    if num_total == 0:
-        return float("nan")
-    else:
-        return num_correct / num_total
+    return float("nan") if num_total == 0 else num_correct / num_total
 
 
 def get_bootstrap_accuracy_std(events: Sequence[Event], num_samples: int = 1000):
@@ -29,9 +26,7 @@ def get_bootstrap_accuracy_std(events: Sequence[Event], num_samples: int = 1000)
 def get_confusion_matrix(
     matches: Sequence[Event], class_labels: Optional[Set] = None
 ) -> np.ndarray:
-    labels = set()
-    for match in matches:
-        labels.add(match.data["expected"])
+    labels = {match.data["expected"] for match in matches}
     if class_labels is None:
         labels = {label: i for i, label in enumerate(sorted(labels))}
     else:
@@ -70,7 +65,8 @@ def compute_f_score(confusion_matrix, idx=0, beta=1.0):
 
 def compute_averaged_f_score(confusion_matrix, beta=1.0, average="macro"):
     assert average in ["macro"]
-    f_scores = []
-    for i in range(confusion_matrix.shape[0]):
-        f_scores.append(compute_f_score(confusion_matrix, idx=i, beta=beta))
+    f_scores = [
+        compute_f_score(confusion_matrix, idx=i, beta=beta)
+        for i in range(confusion_matrix.shape[0])
+    ]
     return np.array(f_scores).mean()

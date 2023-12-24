@@ -61,7 +61,7 @@ def open_by_file_pattern(filename: str, mode: str = "r", **kwargs: Any) -> Any:
             return zstd_open(filename, openhook=open_fn, mode=mode)
         else:
             scheme = urllib.parse.urlparse(filename).scheme
-            if scheme == "" or scheme == "file":
+            if scheme in ["", "file"]:
                 return open_fn(
                     os.path.join(
                         os.path.dirname(os.path.abspath(__file__)), "registry", "data", filename
@@ -98,7 +98,7 @@ def filecache(func):
     name = func.__name__
 
     def wrapper(*args, **kwargs):
-        md5 = hashlib.md5((name + ":" + str((args, kwargs))).encode("utf-8")).hexdigest()
+        md5 = hashlib.md5(f"{name}:{(args, kwargs)}".encode("utf-8")).hexdigest()
         pkl_path = f"{DIR}/{md5}.pkl"
         if os.path.exists(pkl_path):
             logger.debug(f"Loading from file cache: {pkl_path}")
@@ -176,7 +176,7 @@ def iter_jsonls(paths: Union[str, list[str]], line_limit=None) -> Iterator[dict]
 def get_csv(path, fieldnames=None):
     with bf.BlobFile(path, "r", cache_dir="/tmp/bf_cache", streaming=False) as f:
         reader = csv.DictReader(f, fieldnames=fieldnames)
-        return [row for row in reader]
+        return list(reader)
 
 
 def _to_py_types(o: Any) -> Any:
@@ -189,10 +189,7 @@ def _to_py_types(o: Any) -> Any:
         return _to_py_types(dataclasses.asdict(o))
 
     # pydantic data classes
-    if isinstance(o, pydantic.BaseModel):
-        return json.loads(o.json())
-
-    return o
+    return json.loads(o.json()) if isinstance(o, pydantic.BaseModel) else o
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):

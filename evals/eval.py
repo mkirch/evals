@@ -28,8 +28,7 @@ def _index_samples(samples: List[Any]) -> List[Tuple[Any, int]]:
     if _MAX_SAMPLES is not None:
         indices = indices[:_MAX_SAMPLES]
     logger.info(f"Evaluating {len(indices)} samples")
-    work_items = [(samples[i], i) for i in indices]
-    return work_items
+    return [(samples[i], i) for i in indices]
 
 
 def set_max_samples(max_samples: int):
@@ -121,7 +120,7 @@ class Eval(abc.ABC):
                 Evaluate a single sample.
                 """
                 sample, idx = args
-                base_name, split = self.name.split(".")[0:2]
+                base_name, split = self.name.split(".")[:2]
                 sample_id = f"{base_name}.{split}.{idx}"
                 with recorder.as_default_recorder(sample_id):
                     recorder.record_raw(sample)

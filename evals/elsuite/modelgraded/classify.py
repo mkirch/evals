@@ -117,7 +117,7 @@ class ModelBasedClassify(evals.Eval):
         self.multicomp_temperature = multicomp_temperature
         self.samples_renamings = samples_renamings or {}
 
-        if self.model_spec.name == "dummy-completion" or self.model_spec.name == "dummy-chat":
+        if self.model_spec.name in ["dummy-completion", "dummy-chat"]:
             self.eval_modelspec = self.model_spec
         else:
             self.eval_modelspec = ModelSpec(
@@ -131,7 +131,7 @@ class ModelBasedClassify(evals.Eval):
         self.choice_strings = modelgraded_specs.pop("choice_strings")
         # make sure each choice doesn't contain any punctuation
         for s in self.choice_strings:
-            assert not any(c in s for c in string.punctuation), f"{s} contains punctuation"
+            assert all(c not in s for c in string.punctuation), f"{s} contains punctuation"
         #  (optional) 'choice_scores' is a dict that specifies the score for each choice string
         # if 'choice_scores' is specified, 'scores/' are computed and added to metrics
         self.choice_scores = modelgraded_specs.pop("choice_scores", {})
@@ -157,7 +157,7 @@ class ModelBasedClassify(evals.Eval):
         else:
             assert (
                 not eval_type
-            ), f"eval_type must be unspecified, if it is specified in modelgraded_spec_file"
+            ), "eval_type must be unspecified, if it is specified in modelgraded_spec_file"
             append_answer_prompt = False
 
         # 'prompt' is a string that specifies the model-graded evaluation
@@ -280,7 +280,7 @@ class ModelBasedClassify(evals.Eval):
                     assert (
                         metric in test_sample
                     ), f"Missing label for metric '{metric}' in sample {test_sample.keys()}"
-                    metrics[metric + "_metascore"] = choice == test_sample[metric]
+                    metrics[f"{metric}_metascore"] = choice == test_sample[metric]
 
         except openai.error.InvalidRequestError:
             self.invalid_request_during_evaluation += 1
@@ -314,12 +314,15 @@ class ModelBasedClassify(evals.Eval):
                 record_metrics[f"score/{metric}"] = sum(scores) / len(all_sample_metrics)
             # compute the counts and ratios
             counts = dict(Counter(chosen))
-            missing_samples = len(all_sample_metrics) - len(chosen)
-            if missing_samples:
+            if missing_samples := len(all_sample_metrics) - len(chosen):
                 counts["__missing_samples__"] = missing_samples
             record_metrics.update({f"counts/{metric}/{k}": v for k, v in counts.items()})
             if self.metaeval:
-                metascores = [m[metric + "_metascore"] for m in all_sample_metrics if metric in m]
+                metascores = [
+                    m[f"{metric}_metascore"]
+                    for m in all_sample_metrics
+                    if metric in m
+                ]
                 record_metrics[f"metascore/{metric}"] = sum(metascores) / len(all_sample_metrics)
 
         record_metrics["invalid_request_during_completion"] = self.invalid_request_during_completion

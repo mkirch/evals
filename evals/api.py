@@ -220,7 +220,7 @@ def sample_freeform(
 
     if return_logprobs:
         assert not model_spec.is_chat, "logprobs only works for non-chat models"
-        assert not kwargs.get("logprobs") is None
+        assert kwargs.get("logprobs") is not None
 
         def _maybe_tokens(logprobs: Optional[dict]) -> Optional[list[str]]:
             return logprobs["tokens"] if logprobs is not None else None

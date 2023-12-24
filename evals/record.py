@@ -169,12 +169,7 @@ class RecorderBase:
 
         if isinstance(expected, list) and len(expected) == 1:
             expected = expected[0]
-        data = {
-            "correct": bool(correct),
-            "expected": expected,
-            "picked": picked,
-            **extra,
-        }
+        data = {"correct": correct, "expected": expected, "picked": picked, **extra}
         self.record_event("match", data, sample_id=sample_id)
 
     def record_embedding(self, prompt, embedding_type, sample_id=None, **extra):
@@ -273,11 +268,7 @@ class DummyRecorder(RecorderBase):
                 primary_metric == "accuracy" or primary_metric.startswith("pass@")
             ) and (data.get("correct", False) or data.get("accuracy", 0) > 0.5)
             f1_score_good = primary_metric == "f1_score" and data.get("f1_score", 0) > 0.5
-            if accuracy_good or f1_score_good:
-                msg = _green(msg)
-            else:
-                msg = _red(msg)
-
+            msg = _green(msg) if accuracy_good or f1_score_good else _red(msg)
         if self.log:
             logging.info(msg)
 
